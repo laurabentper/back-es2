@@ -20,6 +20,9 @@ public class RepositorioMedicao : IRepositorioMedicao
     public async Task AdicionarAsync(Medicao medicao, CancellationToken cancellationToken = default) =>
         await _contexto.Medicoes.AddAsync(medicao, cancellationToken);
 
+    public void Remover(Medicao medicao) =>
+        _contexto.Medicoes.Remove(medicao);
+
     public Task<Medicao?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         _contexto.Medicoes.FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 

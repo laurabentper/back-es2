@@ -110,6 +110,65 @@ paths:
         '401':
           description: Token ausente ou invalido.
 
+  /api/medicoes/{id}:
+    put:
+      tags: [Medicoes]
+      summary: Atualiza uma medicao do usuario autenticado.
+      description: >-
+        Substitui integralmente os valores da medicao. A medicao deve pertencer
+        ao usuario do token; caso contrario responde 404.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MedicaoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AtualizarMedicaoRequisicao'
+      responses:
+        '200':
+          description: Medicao atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MedicaoResposta'
+        '400':
+          description: Dados invalidos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ValidationProblemDetails'
+        '401':
+          description: Token ausente ou invalido.
+        '404':
+          description: Medicao nao encontrada ou de outro usuario.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+    delete:
+      tags: [Medicoes]
+      summary: Remove uma medicao do usuario autenticado.
+      description: >-
+        A medicao deve pertencer ao usuario do token; caso contrario responde 404.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/MedicaoId'
+      responses:
+        '204':
+          description: Medicao removida.
+        '401':
+          description: Token ausente ou invalido.
+        '404':
+          description: Medicao nao encontrada ou de outro usuario.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+
   /api/relatorios/historico:
     get:
       tags: [Relatorios]
@@ -164,6 +223,14 @@ components:
       description: Informe o token JWT obtido no login (sem o prefixo 'Bearer').
 
   parameters:
+    MedicaoId:
+      name: id
+      in: path
+      required: true
+      description: Identificador da medicao.
+      schema:
+        type: string
+        format: uuid
     Inicio:
       name: inicio
       in: query
@@ -331,6 +398,69 @@ components:
           maximum: 500
           description: Quilogramas.
           example: 70.5
+        faltaDeAr:
+          type: boolean
+          example: false
+        dorNoPeito:
+          type: boolean
+          example: false
+        tontura:
+          type: boolean
+          example: false
+        registradaEm:
+          type: string
+          format: date-time
+          nullable: true
+          description: >-
+            Momento da medicao. Opcional; quando omitido, usa o instante atual.
+            Nao pode estar no futuro.
+
+    AtualizarMedicaoRequisicao:
+      type: object
+      description: >-
+        Novos valores de uma medicao existente. Mesma estrutura e faixas do
+        cadastro; substitui integralmente os valores anteriores.
+      required:
+        - pressaoSistolica
+        - pressaoDiastolica
+        - frequenciaCardiaca
+        - oxigenacaoSangue
+        - pesoCorporal
+        - faltaDeAr
+        - dorNoPeito
+        - tontura
+      properties:
+        pressaoSistolica:
+          type: integer
+          minimum: 50
+          maximum: 300
+          description: mmHg. Deve ser maior que a diastolica.
+          example: 130
+        pressaoDiastolica:
+          type: integer
+          minimum: 30
+          maximum: 200
+          description: mmHg.
+          example: 85
+        frequenciaCardiaca:
+          type: integer
+          minimum: 20
+          maximum: 250
+          description: Batimentos por minuto.
+          example: 75
+        oxigenacaoSangue:
+          type: integer
+          minimum: 50
+          maximum: 100
+          description: SpO2 em porcentagem.
+          example: 97
+        pesoCorporal:
+          type: number
+          format: double
+          minimum: 0.5
+          maximum: 500
+          description: Quilogramas.
+          example: 71.0
         faltaDeAr:
           type: boolean
           example: false

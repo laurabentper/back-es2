@@ -24,6 +24,25 @@ public class TestesDeMedicoes : TesteDeIntegracao
             Tontura: false,
             RegistradaEm: null);
 
+    private static AtualizarMedicaoRequisicao AtualizacaoValida(bool dorNoPeito = false) =>
+        new(
+            PressaoSistolica: 130,
+            PressaoDiastolica: 85,
+            FrequenciaCardiaca: 75,
+            OxigenacaoSangue: 97,
+            PesoCorporal: 71.0m,
+            FaltaDeAr: false,
+            DorNoPeito: dorNoPeito,
+            Tontura: false,
+            RegistradaEm: null);
+
+    private async Task<MedicaoResposta> RegistrarMedicaoAsync(HttpClient cliente)
+    {
+        var resposta = await cliente.PostAsJsonAsync("/api/medicoes", MedicaoValida(), OpcoesJson);
+        resposta.EnsureSuccessStatusCode();
+        return (await resposta.Content.ReadFromJsonAsync<MedicaoResposta>(OpcoesJson))!;
+    }
+
     [Fact]
     public async Task Registrar_SemToken_Retorna401()
     {
@@ -58,5 +77,97 @@ public class TestesDeMedicoes : TesteDeIntegracao
         var resposta = await cliente.PostAsJsonAsync("/api/medicoes", invalida, OpcoesJson);
 
         resposta.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Atualizar_ComToken_Retorna200ComValoresAtualizados()
+    {
+        var autenticacao = await CadastrarEAutenticarAsync();
+        var cliente = ClienteAutenticado(autenticacao.Token);
+        var medicao = await RegistrarMedicaoAsync(cliente);
+
+        var resposta = await cliente.PutAsJsonAsync(
+            $"/api/medicoes/{medicao.Id}", AtualizacaoValida(dorNoPeito: true), OpcoesJson);
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.OK);
+        var atualizada = await resposta.Content.ReadFromJsonAsync<MedicaoResposta>(OpcoesJson);
+        atualizada!.Id.Should().Be(medicao.Id);
+        atualizada.PressaoSistolica.Should().Be(130);
+        atualizada.Sintomas.DorNoPeito.Should().BeTrue();
+        atualizada.PossuiSintomas.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Atualizar_MedicaoInexistente_Retorna404()
+    {
+        var autenticacao = await CadastrarEAutenticarAsync();
+        var cliente = ClienteAutenticado(autenticacao.Token);
+
+        var resposta = await cliente.PutAsJsonAsync(
+            $"/api/medicoes/{Guid.NewGuid()}", AtualizacaoValida(), OpcoesJson);
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Atualizar_MedicaoDeOutroUsuario_Retorna404()
+    {
+        var dono = await CadastrarEAutenticarAsync();
+        var medicao = await RegistrarMedicaoAsync(ClienteAutenticado(dono.Token));
+
+        var outro = await CadastrarEAutenticarAsync();
+        var clienteOutro = ClienteAutenticado(outro.Token);
+
+        var resposta = await clienteOutro.PutAsJsonAsync(
+            $"/api/medicoes/{medicao.Id}", AtualizacaoValida(), OpcoesJson);
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Atualizar_SemToken_Retorna401()
+    {
+        var resposta = await Cliente.PutAsJsonAsync(
+            $"/api/medicoes/{Guid.NewGuid()}", AtualizacaoValida(), OpcoesJson);
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Remover_ComToken_Retorna204EImpedeNovaAtualizacao()
+    {
+        var autenticacao = await CadastrarEAutenticarAsync();
+        var cliente = ClienteAutenticado(autenticacao.Token);
+        var medicao = await RegistrarMedicaoAsync(cliente);
+
+        var resposta = await cliente.DeleteAsync($"/api/medicoes/{medicao.Id}");
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var aposRemocao = await cliente.PutAsJsonAsync(
+            $"/api/medicoes/{medicao.Id}", AtualizacaoValida(), OpcoesJson);
+        aposRemocao.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Remover_MedicaoDeOutroUsuario_Retorna404()
+    {
+        var dono = await CadastrarEAutenticarAsync();
+        var medicao = await RegistrarMedicaoAsync(ClienteAutenticado(dono.Token));
+
+        var outro = await CadastrarEAutenticarAsync();
+        var clienteOutro = ClienteAutenticado(outro.Token);
+
+        var resposta = await clienteOutro.DeleteAsync($"/api/medicoes/{medicao.Id}");
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Remover_SemToken_Retorna401()
+    {
+        var resposta = await Cliente.DeleteAsync($"/api/medicoes/{Guid.NewGuid()}");
+
+        resposta.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

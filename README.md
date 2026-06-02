@@ -149,6 +149,8 @@ Prefixo base: `/api`. Respostas em `application/json`. Datas em formato ISO 8601
 | `POST` | `/api/usuarios` | publico | Cadastra uma nova conta. |
 | `POST` | `/api/usuarios/login` | publico | Autentica por e-mail e senha e retorna um JWT. |
 | `POST` | `/api/medicoes` | Bearer | Registra uma medicao para o usuario autenticado. |
+| `PUT` | `/api/medicoes/{id}` | Bearer | Atualiza uma medicao do usuario autenticado. |
+| `DELETE` | `/api/medicoes/{id}` | Bearer | Remove uma medicao do usuario autenticado. |
 | `GET` | `/api/relatorios/historico` | Bearer | Historico de medicoes (mais recente primeiro). |
 | `GET` | `/api/relatorios/resumo` | Bearer | Resumo agregado das medicoes para graficos. |
 

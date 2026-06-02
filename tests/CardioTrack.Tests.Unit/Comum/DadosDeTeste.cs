@@ -96,4 +96,25 @@ public static class DadosDeTeste
             dorNoPeito,
             tontura,
             registradaEm);
+
+    public static AtualizarMedicaoRequisicao AtualizacaoMedicaoValida(
+        int pressaoSistolica = 130,
+        int pressaoDiastolica = 85,
+        int frequenciaCardiaca = 75,
+        int oxigenacaoSangue = 97,
+        decimal pesoCorporal = 71.0m,
+        bool faltaDeAr = false,
+        bool dorNoPeito = false,
+        bool tontura = false,
+        DateTime? registradaEm = null) =>
+        new(
+            pressaoSistolica,
+            pressaoDiastolica,
+            frequenciaCardiaca,
+            oxigenacaoSangue,
+            pesoCorporal,
+            faltaDeAr,
+            dorNoPeito,
+            tontura,
+            registradaEm);
 }

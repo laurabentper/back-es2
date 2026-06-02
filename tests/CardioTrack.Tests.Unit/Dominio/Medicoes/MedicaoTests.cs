@@ -114,4 +114,48 @@ public class MedicaoTests
 
         medicao.PossuiSintomas.Should().BeTrue();
     }
+
+    [Fact]
+    public void Atualizar_ComDadosValidos_AlteraValoresPreservandoUsuarioECriacao()
+    {
+        var usuarioId = Guid.NewGuid();
+        var medicao = DadosDeTeste.NovaMedicao(usuarioId: usuarioId);
+        var criadaEm = medicao.CriadaEm;
+        var registradaEm = DateTime.UtcNow.AddHours(-1);
+
+        medicao.Atualizar(
+            pressaoSistolica: 135,
+            pressaoDiastolica: 88,
+            frequenciaCardiaca: 80,
+            oxigenacaoSangue: 96,
+            pesoCorporal: 75.2m,
+            sintomas: Sintoma.FaltaDeAr,
+            registradaEm: registradaEm);
+
+        medicao.UsuarioId.Should().Be(usuarioId);
+        medicao.CriadaEm.Should().Be(criadaEm);
+        medicao.PressaoSistolica.Should().Be(135);
+        medicao.PressaoDiastolica.Should().Be(88);
+        medicao.FrequenciaCardiaca.Should().Be(80);
+        medicao.OxigenacaoSangue.Should().Be(96);
+        medicao.PesoCorporal.Should().Be(75.2m);
+        medicao.Sintomas.Should().Be(Sintoma.FaltaDeAr);
+        medicao.RegistradaEm.Should().Be(registradaEm);
+    }
+
+    [Fact]
+    public void Atualizar_ComValorForaDoIntervalo_Lanca()
+    {
+        var medicao = DadosDeTeste.NovaMedicao();
+
+        var acao = () => medicao.Atualizar(
+            pressaoSistolica: 301,
+            pressaoDiastolica: 80,
+            frequenciaCardiaca: 70,
+            oxigenacaoSangue: 98,
+            pesoCorporal: 72.5m,
+            sintomas: Sintoma.Nenhum);
+
+        acao.Should().Throw<ExcecaoDeDominio>().WithMessage("*pressaoSistolica*");
+    }
 }

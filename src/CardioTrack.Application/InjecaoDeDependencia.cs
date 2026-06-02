@@ -25,6 +25,7 @@ public static class InjecaoDeDependencia
         servicos.AddScoped<IValidator<CadastrarUsuarioRequisicao>, CadastrarUsuarioValidador>();
         servicos.AddScoped<IValidator<AutenticarUsuarioRequisicao>, AutenticarUsuarioValidador>();
         servicos.AddScoped<IValidator<RegistrarMedicaoRequisicao>, RegistrarMedicaoValidador>();
+        servicos.AddScoped<IValidator<AtualizarMedicaoRequisicao>, AtualizarMedicaoValidador>();
 
         return servicos;
     }

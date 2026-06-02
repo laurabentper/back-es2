@@ -163,7 +163,44 @@ Faixas validas (fora delas, `400`):
 | `pesoCorporal` | 0,5–500 kg |
 | `registradaEm` | nao pode estar no futuro |
 
-### 4. Historico — `GET /api/relatorios/historico` (Bearer)
+### 4. Atualizar medicao — `PUT /api/medicoes/{id}` (Bearer)
+
+Substitui **integralmente** os valores de uma medicao existente. Envie o corpo
+completo (mesmos campos e faixas do cadastro) — campos omitidos voltam ao padrao.
+A medicao precisa pertencer ao usuario do token; caso contrario a API responde
+`404` (o mesmo de uma medicao inexistente, para nao revelar dados de terceiros).
+
+`PUT /api/medicoes/9a2b...-uuid`
+
+Requisicao:
+
+```json
+{
+  "pressaoSistolica": 130,
+  "pressaoDiastolica": 85,
+  "frequenciaCardiaca": 75,
+  "oxigenacaoSangue": 97,
+  "pesoCorporal": 71.0,
+  "faltaDeAr": false,
+  "dorNoPeito": true,
+  "tontura": false,
+  "registradaEm": null
+}
+```
+
+Resposta `200 OK`: a `MedicaoResposta` atualizada (mesmo formato do cadastro). O
+`id`, o `usuarioId` e o `criadaEm` permanecem inalterados.
+
+### 5. Remover medicao — `DELETE /api/medicoes/{id}` (Bearer)
+
+Remove a medicao do usuario autenticado. Mesma regra de propriedade da
+atualizacao: `404` quando a medicao nao existe ou e de outro usuario.
+
+`DELETE /api/medicoes/9a2b...-uuid`
+
+Resposta `204 No Content` (sem corpo) quando removida com sucesso.
+
+### 6. Historico — `GET /api/relatorios/historico` (Bearer)
 
 Parametros de query opcionais: `inicio` e `fim` (data/hora ISO). Sem eles, retorna
 todo o historico. Ordenado da medicao **mais recente para a mais antiga**.
@@ -184,7 +221,7 @@ Resposta `200 OK`:
 
 Cada item de `medicoes` tem o mesmo formato de `MedicaoResposta` (ver acima).
 
-### 5. Resumo — `GET /api/relatorios/resumo` (Bearer)
+### 7. Resumo — `GET /api/relatorios/resumo` (Bearer)
 
 Mesmos parametros `inicio`/`fim`. Pensado para alimentar graficos.
 
@@ -303,5 +340,6 @@ async function obterResumo(token, inicio, fim) {
 | Cadastro | `POST /api/usuarios` |
 | Login | `POST /api/usuarios/login` |
 | Nova medicao | `POST /api/medicoes` |
+| Editar/remover medicao | `PUT /api/medicoes/{id}`, `DELETE /api/medicoes/{id}` |
 | Historico (lista/tabela) | `GET /api/relatorios/historico` |
 | Dashboard (graficos) | `GET /api/relatorios/resumo` |

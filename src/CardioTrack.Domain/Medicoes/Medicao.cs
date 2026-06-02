@@ -76,4 +76,37 @@ public class Medicao : Entidade
     public DateTime CriadaEm { get; private set; }
 
     public bool PossuiSintomas => Sintomas != Sintoma.Nenhum;
+
+    /// <summary>
+    /// Atualiza os valores da medicao, aplicando as mesmas invariantes do cadastro.
+    /// O usuario dono e o momento de criacao permanecem imutaveis.
+    /// </summary>
+    public void Atualizar(
+        int pressaoSistolica,
+        int pressaoDiastolica,
+        int frequenciaCardiaca,
+        int oxigenacaoSangue,
+        decimal pesoCorporal,
+        Sintoma sintomas,
+        DateTime? registradaEm = null)
+    {
+        Garantir.DentroDoIntervalo(pressaoSistolica, 50, 300, nameof(pressaoSistolica));
+        Garantir.DentroDoIntervalo(pressaoDiastolica, 30, 200, nameof(pressaoDiastolica));
+        Garantir.Que(pressaoSistolica > pressaoDiastolica,
+            "A pressao sistolica deve ser maior que a diastolica.");
+        Garantir.DentroDoIntervalo(frequenciaCardiaca, 20, 250, nameof(frequenciaCardiaca));
+        Garantir.DentroDoIntervalo(oxigenacaoSangue, 50, 100, nameof(oxigenacaoSangue));
+        Garantir.DentroDoIntervalo(pesoCorporal, 0.5m, 500m, nameof(pesoCorporal));
+
+        var quando = registradaEm ?? DateTime.UtcNow;
+        Garantir.Que(quando <= DateTime.UtcNow, "A data da medicao nao pode estar no futuro.");
+
+        PressaoSistolica = pressaoSistolica;
+        PressaoDiastolica = pressaoDiastolica;
+        FrequenciaCardiaca = frequenciaCardiaca;
+        OxigenacaoSangue = oxigenacaoSangue;
+        PesoCorporal = pesoCorporal;
+        Sintomas = sintomas;
+        RegistradaEm = quando;
+    }
 }

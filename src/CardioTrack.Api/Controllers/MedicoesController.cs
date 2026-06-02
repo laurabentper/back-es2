@@ -39,4 +39,36 @@ public sealed class MedicoesController : ControllerBase
         var medicao = await _servico.RegistrarAsync(usuarioId, requisicao, cancellationToken);
         return Created((string?)null, medicao);
     }
+
+    /// <summary>Atualiza uma medicao do usuario autenticado.</summary>
+    [HttpPut("{id:guid}")]
+    [SwaggerOperation(Summary = "Atualiza uma medicao do usuario autenticado.")]
+    [ProducesResponseType(typeof(MedicaoResposta), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Atualizar(
+        [FromRoute] Guid id,
+        [FromBody] AtualizarMedicaoRequisicao requisicao,
+        CancellationToken cancellationToken)
+    {
+        var usuarioId = User.ObterUsuarioId();
+        var medicao = await _servico.AtualizarAsync(usuarioId, id, requisicao, cancellationToken);
+        return Ok(medicao);
+    }
+
+    /// <summary>Remove uma medicao do usuario autenticado.</summary>
+    [HttpDelete("{id:guid}")]
+    [SwaggerOperation(Summary = "Remove uma medicao do usuario autenticado.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Remover(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        var usuarioId = User.ObterUsuarioId();
+        await _servico.RemoverAsync(usuarioId, id, cancellationToken);
+        return NoContent();
+    }
 }

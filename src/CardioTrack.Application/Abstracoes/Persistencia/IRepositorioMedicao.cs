@@ -10,6 +10,9 @@ public interface IRepositorioMedicao
 {
     Task AdicionarAsync(Medicao medicao, CancellationToken cancellationToken = default);
 
+    /// <summary>Remove uma medicao ja persistida.</summary>
+    void Remover(Medicao medicao);
+
     Task<Medicao?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
