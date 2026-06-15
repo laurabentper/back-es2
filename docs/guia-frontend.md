@@ -13,8 +13,8 @@ tratamento de erros. O contrato formal esta em [`swagger.yaml`](swagger.yaml).
 - **Enums:** trafegam como **texto** (ex.: `"Masculino"`), nunca como numero.
 - **Autenticacao:** JWT Bearer nas rotas protegidas.
 - **CORS:** liberado para as origens em `Cors:AllowedOrigins` (por padrao
-  `http://localhost:3000` e `http://localhost:5173`). Adicione a origem do seu
-  front-end nessa lista.
+  `http://localhost:3000`, `http://localhost:5173` e `http://localhost:8100`).
+  Adicione a origem do seu front-end nessa lista.
 
 ## Fluxo de autenticacao
 
